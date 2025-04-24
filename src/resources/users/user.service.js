@@ -1,19 +1,40 @@
 import * as usersRepo from './user.memory.repository.js';
 
-const getAll = () => usersRepo.getAll();
-// resources/users/user.service.js
+// abiturient.service.js
+const abiturientRepo = require('./abiturient.memory.repository');
+const examService = require('./exam.service');
 
-const userRepo = require('./user.memory.repository');
+// CRUD‑операции для абитуриентов
+async function getAll() {
+  return await abiturientRepo.getAll();
+}
 
-const getAll = async () => await userRepo.getAll();
+async function getById(id) {
+  return await abiturientRepo.getById(id);
+}
 
-const getById = async (id) => await userRepo.getById(id);
+async function create(data) {
+  return await abiturientRepo.create(data);
+}
 
-const create = async (data) => await userRepo.create(data);
+async function update(id, data) {
+  return await abiturientRepo.update(id, data);
+}
 
-const update = async (id, data) => await userRepo.update(id, data);
-
-const remove = async (id) => await userRepo.remove(id);
+/**
+ * При удалении абитуриента:
+ * 1. Удаляется запись абитуриента.
+ * 2. Вызывается обработка экзаменов:
+ *    - Если у экзамена teacherId === null, запись экзамена удаляется.
+ *    - Иначе abiturientId устанавливается в null.
+ */
+async function remove(id) {
+  const removed = await abiturientRepo.remove(id);
+  if (removed) {
+    await examService.handleAbiturientDeletion(id);
+  }
+  return removed;
+}
 
 module.exports = { getAll, getById, create, update, remove };
 
